@@ -14,23 +14,21 @@ export function weatherData() {
         .then(json => {
             return sortData(json);
         })
-        
+
 }
 
 function sortData(json) {
-  console.log(json);  
+    console.log(json);
     let times = getTimes(json);
-    let windDegs = getWindDegs(json);
+    let dates = getDates(json);
     let windDirections = getWindDirections(json);
     let windSpeeds = getWindSpeeds(json);
     let temp = getTemp(json);
     let icon = getWeatherIcon(json);
 
     return {
-        "lon": json.lon,
-        "lat": json.lat,
+        "dates": dates,
         "times": times,
-        "windDegs": windDegs,
         "windDirections": windDirections,
         "windSpeeds": windSpeeds,
         "temp": temp,
@@ -43,20 +41,55 @@ function getTimes(data) {
     let results = [];
 
     for (let i = 0; i < data.hourly.length; i++) {
+
         results.push(convertTime(data.hourly[i].dt));
     }
 
     return results;
 }
 
+function getDates(data) {
+    let results = [];
+    
+    let checkDuplicate = "";
+
+    for (let i = 0; i < data.hourly.length; i++) {
+        let test = convertDate(data.hourly[i].dt);
+        if (test != checkDuplicate) {
+            checkDuplicate = test;
+            results.push(checkDuplicate);
+            console.log(checkDuplicate);
+        }
+        else {
+            results.push("");
+        }
+    }
+/*
+    for (let i = 0; i < data.hourly.length; i++) {
+        results.push(convertDate(data.hourly[i].dt));
+    }*/
+    return results;
+}
+
+function convertDate(unixTimestamp) {
+    let myDate = new Date(unixTimestamp * 1000);
+
+    const months_arr = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const days_arr = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    let day = days_arr[myDate.getDay()];
+    let date = myDate.getDate();
+    let month = months_arr[myDate.getMonth()];
+
+    let result = day + " " + date + " " + month;
+
+    return result;
+}
+
 //convert the unix timestamp to readable times for users
 function convertTime(unixTimestamp) {
     let myDate = new Date(unixTimestamp * 1000);
 
-    const months_arr = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-    let day = myDate.getDate();
-    let month = months_arr[myDate.getMonth()];
     let hours = myDate.getHours();
     if (hours > 12) {
         hours = hours - 12 + " pm";
@@ -67,19 +100,8 @@ function convertTime(unixTimestamp) {
     else {
         hours += " pm";
     }
-    let time = day + "-" + month + " " + hours;
+    let time = hours;
     return time;
-}
-
-//get wind desgrees and return an array
-function getWindDegs(data) {
-    let results = [];
-
-    for (let i = 0; i < data.hourly.length; i++) {
-        results.push(data.hourly[i].wind_deg);
-    }
-
-    return results;
 }
 
 //get wind degrees and returns the named direction as an array
@@ -116,23 +138,23 @@ function getWindSpeeds(data) {
 
 //gets temperature 
 function getTemp(data) {
-  let results = [];
+    let results = [];
 
-  for (let i = 0; i < data.hourly.length; i++) {
-    results.push((data.hourly[i].temp).toFixed(0));
-  }
+    for (let i = 0; i < data.hourly.length; i++) {
+        results.push((data.hourly[i].temp).toFixed(0));
+    }
 
-  return results;
+    return results;
 }
 
 //gets weather icon
 function getWeatherIcon(data) {
-  let results = [];
+    let results = [];
 
-  for (let i = 0; i < data.hourly.length; i++) {
-    let id = data.hourly[i].weather[0].icon;
-    results.push('http://openweathermap.org/img/wn/' + id + '@2x.png');
-  }
+    for (let i = 0; i < data.hourly.length; i++) {
+        let id = data.hourly[i].weather[0].icon;
+        results.push('http://openweathermap.org/img/wn/' + id + '@2x.png');
+    }
 
-  return results;
+    return results;
 }
