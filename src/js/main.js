@@ -30,6 +30,8 @@ function combineData(weatherDatas) {
 
 //add data to the table
 function addDataToWebsite(mainData) {
+    let minMaxTemps = findTempRange(mainData.temp);
+
     let trs = [];
     for (let i = 0; i < Object.keys(mainData).length; i++) {
         trs.push(document.createElement('tr'));
@@ -66,8 +68,9 @@ function addDataToWebsite(mainData) {
                         textNode = document.createTextNode(text);
                         console.log(textNode);
                         td.setAttribute('id', "sticky");
-                        let distance = (countDistance(mainData.dates, text) * 123) + 3; 
+                        let distance = (countDistance(mainData.dates, text) * 121);
                         td.setAttribute('style', "margin-Right:" + distance + "px");
+
                         td.appendChild(textNode);
                     }
                     else {
@@ -86,37 +89,100 @@ function addDataToWebsite(mainData) {
             }
         }
 
-        for (let i = 0; i < trs.length; i++) {
-            table.appendChild(trs[i]);
-        }
     }
+
+    let figure = document.createElement('figure');
+    figure.setAttribute('class', 'css-chart');
+    figure.setAttribute('style', "--widget-size: 200");
+
+    let ul = document.createElement('ul');
+    ul.setAttribute('class', 'line-chart');
+    figure.appendChild(ul);
+
+    for (let i = 0; i < mainData.temp.length; i++) {
+        let li = document.createElement('li');
+        let divLine = document.createElement('div');
+
+        let height = ((mainData.temp[i] - minMaxTemps[0]) / (minMaxTemps[1] - minMaxTemps[0]) * 39);
+        let length = (i * 123 + 57);
+
+        let hypotenuse = 0;
+        let angle = 0;
+
+        if (i < mainData.temp.length - 1) {
+            let otherHeight = ((mainData.temp[i + 1] - minMaxTemps[0]) / (minMaxTemps[1] - minMaxTemps[0]) * 39);
+            let totalHeight = height - otherHeight;
+            hypotenuse = Math.hypot(totalHeight, 123);
+
+            angle = Math.asin(totalHeight/hypotenuse);
+            angle = angle * (180 / Math.PI);
+        }
+
+        li.setAttribute('style', '--x:' + length + 'px; --y:' + (height - 20) + 'px');
+
+        divLine.setAttribute('class', 'line-segment');
+        divLine.setAttribute('style', '--hypotenuse: ' + hypotenuse + '; --angle:' + angle);
+
+        li.appendChild(divLine);
+        ul.appendChild(li);
+    }
+
+    for (let i = 0; i < trs.length; i++) {
+        if (i == 4) {
+            table.appendChild(figure);
+        }
+        table.appendChild(trs[i]);
+    }
+}
+
+//Find the highest and lowest temps
+function findTempRange(temps) {
+    let results = [];
+
+    let lowest = parseInt(temps[0]);
+    let highest = parseInt(temps[0]);
+
+    temps.forEach(element => {
+        if (parseInt(element) < lowest) {
+            console.log(element);
+            lowest = element;
+        }
+
+        if (parseInt(element) > highest) {
+            highest = element;
+        }
+    });
+
+    results.push(lowest - 1, parseInt(highest) + 1);
+
+    console.log(results);
+
+    return results;
 }
 
 //Counts how many to span across
 function countDistance(checkArray, check) {
     let startingPoint = 0;
     let totalGap = 0;
-    console.log(checkArray);
+
     for (let i = 0; i < checkArray.length; i++) {
         if (checkArray[i] == check) {
             startingPoint = i + 1;
         }
-    } 
-    console.log(startingPoint); 
+    }
 
     for (let i = startingPoint; i < checkArray.length; i++) {
         if (checkArray[i] != "") {
             totalGap = i - startingPoint;
             break;
         }
-    } 
-    console.log(totalGap);
+    }
+
     let result = checkArray.length - (totalGap + startingPoint);
-    if ((startingPoint != 0) && (totalGap == 0))
-    {
+    if ((startingPoint != 0) && (totalGap == 0)) {
         result = 0;
     }
-    console.log(result);
+
     return result;
 }
 
