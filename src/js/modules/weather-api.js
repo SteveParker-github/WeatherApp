@@ -3,7 +3,7 @@ const lat = '-45.754';
 const long = '170.692';
 const units = 'metric';
 const exclude = 'current,minutely,daily,alerts'
-const key = '4bf77663c016d7237d16b9e8b53d800f';
+const key = process.env.weather_key;
 
 const url = 'https://api.openweathermap.org/data/2.5/onecall?lat=' + lat + '&lon=' + long + '&units=' + units + '&exclude=' + exclude + '&appid=' + key;
 
